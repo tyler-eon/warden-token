@@ -21,7 +21,7 @@ class Warden::Strategies::Token < ::Warden::Strategies::Base
 
   def authenticate!
     user = User.where(id: id).first
-    if user && Token.secure_compare(user.auth_token)
+    if user && secure_compare(user.auth_token)
       success!(user)
     else
       fail!("Invalid user id or token")
