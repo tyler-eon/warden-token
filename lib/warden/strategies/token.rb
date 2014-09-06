@@ -1,7 +1,7 @@
 require "warden"
 
 class Warden::Strategies::Token < ::Warden::Strategies::Base
-  VERSION = "0.1.0"
+  VERSION = "0.1.1"
 
   attr_reader :id, :token
 
