@@ -1,7 +1,7 @@
 require "warden"
 
 class Warden::Strategies::Token < ::Warden::Strategies::Base
-  VERSION = "0.1.1"
+  VERSION = "0.2.0"
 
   attr_reader :id, :token
 
@@ -11,7 +11,9 @@ class Warden::Strategies::Token < ::Warden::Strategies::Base
     if request.authorization && request.authorization =~ /^Basic (.*)$/m
       @id, @token = Base64.decode64($1).split(/:/, 2)
     else
-      @id, @token = params[:user_id], params[:token]
+      uid = config[:user_id_param] || :user_id
+      token = config[:user_token_param] || :token
+      @id, @token = params[uid], params[token]
     end
   end
 
@@ -21,11 +23,17 @@ class Warden::Strategies::Token < ::Warden::Strategies::Base
 
   def authenticate!
     user = User.where(id: id).first
-    if user && secure_compare(user.auth_token)
+    token = user.send(config[:token_name])
+    if user && secure_compare(token)
       success!(user)
     else
       fail!("Invalid user id or token")
     end
+  end
+
+  # Returns the configuration data for the default user scope.
+  def config
+    env["warden"].config[:scope_defaults][:user][:config]
   end
 
   private
